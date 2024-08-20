@@ -16,10 +16,21 @@ const userTable = `create table if not exists users (
 	updated_at timestamp not null
 )`
 
+const passwordTable = `create table if not exists passwords (
+	id serial primary key,
+	email varchar(255) not null,
+	password varchar(100) null,
+	code varchar(6) not null unique,
+	used boolean not null,
+	created_at timestamp not null,
+	updated_at timestamp not null
+)`
+
 func CreateTable(tables ...string) {
 	// query maps table names to their respective queries
 	var tablesQuery = map[string]string{
-		"users": userTable,
+		"users":     userTable,
+		"passwords": passwordTable,
 	}
 
 	timeout := 5 * time.Second

@@ -21,6 +21,7 @@ func New(dbPool *sql.DB) Models {
 
 	CreateTable(
 		"users",
+		"passwords",
 	)
 
 	return Models{

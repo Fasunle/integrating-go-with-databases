@@ -60,6 +60,11 @@ func (app *Config) UserLogin(w http.ResponseWriter, r *http.Request) {
 func (app *Config) UserLogout(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Hit the user logout endpoint")
 }
+
+func (app *Config) UserDelete(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Hit the user delete user account endpoint")
+}
+
 func (app *Config) UserSignup(w http.ResponseWriter, r *http.Request) {
 	var requestPayload struct {
 		Email     string `json:"email"`
@@ -100,6 +105,31 @@ func (app *Config) UserSignup(w http.ResponseWriter, r *http.Request) {
 	app.WriteJSON(w, http.StatusAccepted, payload)
 
 }
+
 func (app *Config) UserReset(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Hit the user reset endpoint")
+	var requestPayload struct {
+		Email string `json:"email"`
+	}
+
+	app.ReadJSON(w, r, &requestPayload)
+
+	passwords := data.Password{}
+
+	err := passwords.Insert(requestPayload.Email)
+
+	if err != nil {
+		log.Println("Error occurred while resetting password", err)
+		app.ErrorJSON(w, errors.New("could not reset the password"), http.StatusBadRequest)
+		return
+	}
+
+	payload := JsonResponse{
+		Error:   false,
+		Message: fmt.Sprintf("Reset password for user %s", requestPayload.Email),
+		Data:    "visit the link sent to your email to reset your password",
+	}
+
+	// TODO: send email to user with the link to reset password
+
+	app.WriteJSON(w, http.StatusAccepted, payload)
 }
