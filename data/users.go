@@ -226,29 +226,6 @@ func (u *User) ResetPassword(password string) error {
 	return nil
 }
 
-func (u *User) CreateUserTable() error {
-	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
-	defer cancel()
-
-	stmt := `create table if not exists users (
-		id serial primary key,
-		email varchar(255) not null unique,
-		first_name varchar(100) not null,
-		last_name varchar(100) not null,
-		password varchar(100) not null,
-		user_active int not null,
-		created_at timestamp not null,
-		updated_at timestamp not null
-	)`
-
-	_, err := db.ExecContext(ctx, stmt)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // PasswordMatches uses Go's bcrypt package to compare a user supplied password
 // with the hash we have stored for a given user in the database. If the password
 // and hash match, we return true; otherwise, we return false.

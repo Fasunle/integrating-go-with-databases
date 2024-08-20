@@ -9,10 +9,10 @@ func (app *Config) routes() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(middleware.RealIP, middleware.Logger, middleware.Throttle(5), middleware.Recoverer, middleware.Heartbeat("/"))
 
-	r.Get("/auth/login", app.UserLogin)
-	r.Get("/auth/logout", app.UserLogout)
-	r.Get("/auth/signup", app.UserSignup)
-	r.Get("/auth/reset", app.UserReset)
+	r.Post("/auth/login", app.UserLogin)
+	r.Post("/auth/logout", app.UserLogout)
+	r.Post("/auth/signup", app.UserSignup)
+	r.Post("/auth/reset", app.UserReset)
 
 	return r
 }
