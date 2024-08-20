@@ -17,17 +17,15 @@ type Password struct {
 	UpdatedAt string `json:"updated_at"`
 }
 
-func (p *Password) ValidateCode(c string) (bool, error) {
+func (p *Password) ValidateCode(email, c string) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	query := `
-	select id, email, code, password, used, created_at, updated_at 
-	from passwords 
-	where email = $1, used = false
+	select id, email, code, password, used, created_at, updated_at from passwords where email = $1 and used = false
 	`
 
-	row := db.QueryRowContext(ctx, query, p.Email)
+	row := db.QueryRowContext(ctx, query, email)
 
 	err := row.Scan(
 		&p.ID,
@@ -86,6 +84,22 @@ func (p *Password) Insert(email string) error {
 	code := generateRandomString(6)
 
 	_, err := db.ExecContext(ctx, query, email, code, false, time.Now(), time.Now())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (p *Password) Update(code, password string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
+	defer cancel()
+	query := `
+	update passwords
+	set password = $2, updated_at = $3, used = true
+	where code = $1
+	`
+	_, err := db.ExecContext(ctx, query, code, password, time.Now())
 	if err != nil {
 		return err
 	}

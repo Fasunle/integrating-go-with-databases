@@ -133,3 +133,52 @@ func (app *Config) UserReset(w http.ResponseWriter, r *http.Request) {
 
 	app.WriteJSON(w, http.StatusAccepted, payload)
 }
+
+// change the user password given that the code provided to the user's email is valid
+func (app *Config) UserConfirmPassword(w http.ResponseWriter, r *http.Request) {
+	var requestPayload struct {
+		Email    string `json:"email"`
+		Code     string `json:"code"`
+		Password string `json:"password"`
+	}
+
+	app.ReadJSON(w, r, &requestPayload)
+
+	passwords := data.Password{}
+	valid, err := passwords.ValidateCode(requestPayload.Email, requestPayload.Code)
+
+	if err != nil {
+		log.Println("Error occurred while validating password", err)
+		app.ErrorJSON(w, errors.New("could not validate the password"), http.StatusBadRequest)
+		return
+	}
+
+	if !valid {
+		log.Println("Invalid code", err)
+		app.ErrorJSON(w, errors.New("invalid code"), http.StatusBadRequest)
+		return
+	}
+
+	user := data.User{}
+	u, _ := user.GetByEmail(requestPayload.Email)
+	u.ResetPassword(requestPayload.Password)
+
+	u, _ = user.GetByEmail(requestPayload.Email)
+	err = passwords.Update(requestPayload.Code, u.Password)
+
+	if err != nil {
+		log.Println("Error occurred while updating password", err)
+		app.ErrorJSON(w, errors.New("could not update the password"), http.StatusBadRequest)
+		return
+	}
+
+	// TODO: send email to user that the password has been changed
+
+	payload := JsonResponse{
+		Error:   false,
+		Message: fmt.Sprintf("Password changed for user %s", requestPayload.Email),
+		Data:    "password changed successfully",
+	}
+
+	app.WriteJSON(w, http.StatusAccepted, payload)
+}

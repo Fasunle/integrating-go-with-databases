@@ -19,7 +19,7 @@ const userTable = `create table if not exists users (
 const passwordTable = `create table if not exists passwords (
 	id serial primary key,
 	email varchar(255) not null,
-	password varchar(100) null,
+	password varchar(100) DEFAULT '',
 	code varchar(6) not null unique,
 	used boolean not null,
 	created_at timestamp not null,

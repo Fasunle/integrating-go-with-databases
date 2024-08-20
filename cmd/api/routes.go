@@ -13,6 +13,7 @@ func (app *Config) routes() *chi.Mux {
 	r.Post("/auth/logout", app.UserLogout)
 	r.Post("/auth/signup", app.UserSignup)
 	r.Post("/auth/reset", app.UserReset)
+	r.Post("/auth/confirm-password", app.UserConfirmPassword)
 
 	return r
 }
