@@ -2,20 +2,20 @@ package auth
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-// type TokenMaker interface {
-// 	CreateToken(email string, duration time.Duration) (string, error)
-// 	VerifyToken(token string) (*Payload, error)
-// }
-
 type TokenMaker struct{}
+type Tokens struct {
+	AccessToken  string `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
+}
 
 func (app *TokenMaker) CreateToken(email string, duration time.Duration) (string, error) {
-	secret := "secret"
+	secret := os.Getenv("SECRET_KEY")
 	payload := jwt.MapClaims{
 		"exp":   time.Now().Add(duration).Unix(),
 		"email": email,
@@ -26,8 +26,9 @@ func (app *TokenMaker) CreateToken(email string, duration time.Duration) (string
 }
 
 func (app *TokenMaker) VerifyToken(t string) (bool, error) {
+	secret := os.Getenv("SECRET_KEY")
 	token, err := jwt.Parse(t, func(token *jwt.Token) (interface{}, error) {
-		return []byte("secret"), nil
+		return []byte(secret), nil
 	})
 
 	if err != nil {
@@ -43,11 +44,6 @@ func (app *TokenMaker) VerifyToken(t string) (bool, error) {
 		return false, errors.New("couldn't handle this token")
 	}
 
-}
-
-type Tokens struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
 }
 
 func CreateTokens(email string) (Tokens, error) {

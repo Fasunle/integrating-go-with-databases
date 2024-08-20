@@ -49,8 +49,7 @@ func (app *Config) UserLogin(w http.ResponseWriter, r *http.Request) {
 		Message: fmt.Sprintf("Logged in user %s", u.Email),
 		Data: map[string]any{
 			"tokens": tokens,
-			// "refresh_token": tokens.RefreshToken,
-			"user": u,
+			"user":   u,
 		},
 	}
 
