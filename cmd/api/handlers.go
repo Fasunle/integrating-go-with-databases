@@ -9,6 +9,7 @@ import (
 
 	"github.com/Fasunle/integrating-go-with-databases/auth"
 	"github.com/Fasunle/integrating-go-with-databases/data"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func (app *Config) UserLogin(w http.ResponseWriter, r *http.Request) {
@@ -161,10 +162,15 @@ func (app *Config) UserConfirmPassword(w http.ResponseWriter, r *http.Request) {
 
 	user := data.User{}
 	u, _ := user.GetByEmail(requestPayload.Email)
-	u.ResetPassword(requestPayload.Password)
+	p, err := bcrypt.GenerateFromPassword([]byte(requestPayload.Password), 12)
 
-	u, _ = user.GetByEmail(requestPayload.Email)
-	err = passwords.Update(requestPayload.Code, u.Password)
+	if err != nil {
+		app.ErrorJSON(w, errors.New("error on hashing password"), http.StatusBadRequest)
+		return
+	}
+
+	u.ResetPassword(requestPayload.Password)
+	err = passwords.Update(requestPayload.Code, string(p))
 
 	if err != nil {
 		log.Println("Error occurred while updating password", err)
